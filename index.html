@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Employee Tracker</title>
+
+  <style>
+    body{
+      font-family: Arial, Helvetica, sans-serif;
+      text-align:center;
+      margin-top:40px;
+    }
+    button{
+      padding:10px 20px;
+      margin:5px;
+      cursor:pointer;
+    }
+    input{
+      padding:8px;
+      margin:5px;
+      width:220px;
+    }
+    img{
+      max-width:180px;
+      margin-bottom:20px;
+    }
+  </style>
+
+</head>
+
+<body>
+
+<!-- LOGO -->
+<img src="image.png">
+
+<!-- LOGIN -->
+<div id="loginBox">
+  <h2>Login</h2>
+  <input id="email" placeholder="Email"><br>
+  <input id="password" type="password" placeholder="Password"><br>
+  <button onclick="login()">Login</button>
+</div>
+
+<!-- APP -->
+<div id="app" style="display:none;">
+  <h3 id="welcome"></h3>
+
+  <button onclick="setStatus('Active')">Active</button>
+  <button onclick="setStatus('Break')">Break</button>
+  <button onclick="setStatus('WSW')">WSW</button>
+  <button onclick="logout()">Logout</button>
+</div>
+
+<script>
+const API = "https://script.google.com/macros/s/AKfycby-NSeS0Nmz8XOv9zwSDrx5If6R1-vYyiMvJgEF-wlu3pCRg1hpojS4HOcUtx42D2k/exec";
+
+let user = {};
+
+function login() {
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "login",
+      email: email.value,
+      password: password.value
+    })
+  })
+  .then(r => r.json())
+  .then(res => {
+    if (res.success) {
+      user = { email: email.value, name: res.name, role: res.role };
+      loginBox.style.display = "none";
+      app.style.display = "block";
+      welcome.innerText = "Welcome " + res.name;
+      setStatus("Active");
+    } else {
+      alert("Invalid login");
+    }
+  });
+}
+
+function setStatus(status) {
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({
+      action: "status",
+      email: user.email,
+      name: user.name,
+      status: status
+    })
+  });
+}
+
+function logout() {
+  setStatus("Logout");
+  location.reload();
+}
+</script>
+
+</body>
+</html>
