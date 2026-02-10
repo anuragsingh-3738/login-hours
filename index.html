@@ -4,29 +4,11 @@
   <title>Employee Tracker</title>
 
   <style>
-    body{
-      font-family: Arial;
-      text-align:center;
-      margin-top:40px;
-    }
-    button{
-      padding:10px 20px;
-      margin:5px;
-      cursor:pointer;
-    }
-    input{
-      padding:8px;
-      margin:5px;
-    }
-    img{
-      max-width:160px;
-      margin-bottom:20px;
-    }
-    #adminPanel{
-      margin-top:20px;
-      border-top:1px solid #ccc;
-      padding-top:20px;
-    }
+    body{font-family:Arial;text-align:center;margin-top:40px;}
+    button{padding:10px 20px;margin:5px;cursor:pointer;}
+    input{padding:8px;margin:5px;}
+    img{max-width:150px;margin-bottom:20px;}
+    #adminPanel{margin-top:20px;border-top:1px solid #ccc;padding-top:20px;}
   </style>
 </head>
 
@@ -57,7 +39,7 @@
 
   <h3 id="reportResult"></h3>
 
-  <!-- ADMIN PANEL -->
+  <!-- ADMIN -->
   <div id="adminPanel" style="display:none;">
     <h3>Admin Report</h3>
     <input id="adminEmail" placeholder="Employee Email">
@@ -65,12 +47,15 @@
     <button onclick="getAdminReport()">Get Report</button>
 
     <h3 id="adminResult"></h3>
+
+    <br><br>
+    <button onclick="getLive()">Live Status</button>
+    <div id="liveBoard"></div>
   </div>
 </div>
 
 <script>
 const API = "https://script.google.com/macros/s/AKfycby-NSeS0Nmz8XOv9zwSDrx5If6R1-vYyiMvJgEF-wlu3pCRg1hpojS4HOcUtx42D2k/exec";
-
 let user = {};
 
 // LOGIN
@@ -95,6 +80,7 @@ function login() {
 
       if (res.role === "admin") {
         adminPanel.style.display = "block";
+        getLive();
       }
     } else {
       alert("Invalid login");
@@ -121,7 +107,6 @@ function logout() {
   location.reload();
 }
 
-// TIME FORMAT
 function secondsToHMS(s){
   const h = String(Math.floor(s/3600)).padStart(2,'0');
   const m = String(Math.floor((s%3600)/60)).padStart(2,'0');
@@ -172,6 +157,29 @@ function getAdminReport() {
     `;
   });
 }
+
+// LIVE BOARD
+function getLive() {
+  fetch(API, {
+    method: "POST",
+    body: JSON.stringify({ action: "live" })
+  })
+  .then(r=>r.json())
+  .then(res=>{
+    let html = "<h3>Today's Live Status</h3>";
+    for (let email in res.data) {
+      const u = res.data[email];
+      html += `${u.name} (${email}) - ${u.status} at ${u.time}<br>`;
+    }
+    liveBoard.innerHTML = html;
+  });
+}
+
+// AUTO REFRESH FOR ADMIN
+setInterval(()=>{
+  if(user.role === "admin") getLive();
+}, 10000);
+
 </script>
 
 </body>
